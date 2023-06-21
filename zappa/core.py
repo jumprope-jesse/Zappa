@@ -3092,24 +3092,27 @@ class Zappa:
 
         # catch this exception (triggered if the table doesn't exist)
         except botocore.exceptions.ClientError:
-            dynamodb_table = self.dynamodb_client.create_table(
-                AttributeDefinitions=[{"AttributeName": "id", "AttributeType": "S"}],
-                TableName=table_name,
-                KeySchema=[
-                    {"AttributeName": "id", "KeyType": "HASH"},
-                ],
-                ProvisionedThroughput={
-                    "ReadCapacityUnits": read_capacity,
-                    "WriteCapacityUnits": write_capacity,
-                },
-            )
-            if dynamodb_table:
-                try:
-                    self._set_async_dynamodb_table_ttl(table_name)
-                except botocore.exceptions.ClientError:
-                    # this fails because the operation is async, so retry
-                    time.sleep(10)
-                    self._set_async_dynamodb_table_ttl(table_name)
+            try:
+                dynamodb_table = self.dynamodb_client.create_table(
+                    AttributeDefinitions=[{"AttributeName": "id", "AttributeType": "S"}],
+                    TableName=table_name,
+                    KeySchema=[
+                        {"AttributeName": "id", "KeyType": "HASH"},
+                    ],
+                    ProvisionedThroughput={
+                        "ReadCapacityUnits": read_capacity,
+                        "WriteCapacityUnits": write_capacity,
+                    },
+                )
+                if dynamodb_table:
+                    try:
+                        self._set_async_dynamodb_table_ttl(table_name)
+                    except botocore.exceptions.ClientError:
+                        # this fails because the operation is async, so retry
+                        time.sleep(10)
+                        self._set_async_dynamodb_table_ttl(table_name)
+            except BaseException as be:
+                logging.warning(f"Zappa 3115 dyanmodb table creation failed (probably ok): {be}")
 
         return True, dynamodb_table
 
@@ -3117,6 +3120,7 @@ class Zappa:
         """
         Remove the DynamoDB Table used for async return values
         """
+        return
         self.dynamodb_client.delete_table(TableName=table_name)
 
     ##
