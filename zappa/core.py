@@ -3086,6 +3086,7 @@ class Zappa:
         """
         Create the DynamoDB table for async task return values
         """
+        dynamodb_table = None
         try:
             dynamodb_table = self.dynamodb_client.describe_table(TableName=table_name)
             return False, dynamodb_table
