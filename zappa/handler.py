@@ -423,8 +423,8 @@ class LambdaHandler:
             whole_function = event["command"]
             app_function = self.import_module_and_get_function(whole_function)
             result = self.run_function(app_function, event, context)
-            print("Result of %s:" % whole_function)
-            print(result)
+            logging.debug("Result of %s:" % whole_function)
+            logging.debug(result)
             return result
 
         # This is a direct, raw python invocation.
